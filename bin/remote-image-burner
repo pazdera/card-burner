@@ -17,7 +17,7 @@ fi
 
 echo "Downloading the burner script ..."
 mkdir -p $WORK_DIR
-wget -O "$BURNER"  https://dev.kano.me/public/card-burner/bin/image-burner
+wget -O "$BURNER"  http://dev.kano.me/public/card-burner/bin/image-burner
 if [ $? -ne 0 ]; then
     echo "ERROR: Error downloading the burner script"
     exit 1
