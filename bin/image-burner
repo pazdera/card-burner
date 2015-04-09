@@ -2,7 +2,7 @@
 
 WORK_DIR=~/kano
 DEVICE=$1
-IMG_URL="http://dev.kano.me/public/Kanux-Beta-v1.3.2-release-8gb.img"
+IMG_URL="http://dev.kano.me/public/kano-os-prod-latest.img"
 
 # The device must be set
 if [ -z "$1" ]; then
