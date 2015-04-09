@@ -61,7 +61,7 @@ dev_md5=`sudo md5sum $DEVICE | cut -c -32`
 echo "CARD checksum: $dev_md5"
 
 if [ "$orig_md5" == "$dev_md5" ]; then
-    echo "SUCCESS: Production image burned successfully."
+    echo "SUCCESS: Production image burned successfully (IT IS SAFE TO REMOVE THE CARD NOW)."
 else
     echo "FAILED: The checksums don't match."
     exit 1
