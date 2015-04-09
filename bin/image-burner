@@ -6,8 +6,8 @@ IMG_URL="http://dev.kano.me/public/Kanux-Beta-v1.3.2-release-8gb.img"
 
 # The device must be set
 if [ -z "$1" ]; then
-    echo "ERROR: The card device name is needed as a parameter"
-    exit 1
+    DEVICE=`realpath /dev/disk/by-id/usb-Generic_Power_Saving_USB_000000000260-0\:0`
+    echo "WARNING: The card device name not specified, using the default $DEVICE"
 fi
 
 # The source image can be overriden
