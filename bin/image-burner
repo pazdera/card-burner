@@ -58,7 +58,7 @@ orig_md5=`json-get $WORK_DIR/metadata.json uncompressed_md5`
 echo "ORIGINAL checksum: $orig_md5"
 
 dev_md5=`sudo md5sum $DEVICE | cut -c -32`
-echo "CARD checksum: $dev_md5"
+echo "CARD checksum    : $dev_md5"
 
 if [ "$orig_md5" == "$dev_md5" ]; then
     echo "SUCCESS: Production image burned successfully (IT IS SAFE TO REMOVE THE CARD NOW)."
