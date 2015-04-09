@@ -30,7 +30,7 @@ if [ "$answer" != "Y" ] && [ "$answer" != "y" ]; then
    exit 0
 fi
 
-for part in `ls ${1}*`; do
+for part in `ls ${DEVICE}*`; do
     echo "Umounting $part..."
     sudo umount $part
 done
