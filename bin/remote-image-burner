@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BURNER=~/kano/image-burner
+
+ping -c3 dev.kano.me
+if [ $? -ne 0 ]; then
+    echo "ERROR: Unable to contact the download servers. Are you connected to the internet?"
+    exit 1
+else
+    echo "Found the download servers ..."
+fi
+
+if [ "$2" != "--cached" ]; then
+    rm -rf ~/kano/*
+fi
+
+echo "Downloading the burner script ..."
+mkdir -p ~/kano
+wget -O "$BURNER"  https://dev.kano.me/public/image-burner
+if [ $? -ne 0 ]; then
+    echo "ERROR: Error downloading the burner script"
+    exit 1
+fi
+chmod +x "$BURNER"
+
+echo "Running the image script ..."
+$BURNER $@
