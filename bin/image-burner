@@ -1,15 +1,27 @@
 #!/bin/bash
 
+WORK_DIR=~/kano
+DEVICE=$1
+IMG_URL="http://dev.kano.me/public/Kanux-Beta-v1.3.2-release-8gb.img"
+
+# The device must be set
 if [ -z "$1" ]; then
     echo "ERROR: The card device name is needed as a parameter"
     exit 1
 fi
 
-DEVICE=$1
-
-IMG_URL="http://dev.kano.me/public/Kanux-Beta-v1.3.2-release-8gb.img"
+# The source image can be overriden
 if [ -n "$2" ]; then
     IMG_URL="$2"
+fi
+
+echo "The partitions on the selected disk are:"
+sudo fdisk -l | grep "^$DEVICE"
+echo -n "Do you want to override them [y/N]: "
+read answer
+if [ "$answer" != "Y" ] && [ "$answer" != "y" ]; then
+   echo "Canceled by the user. Card won't be burned."
+   exit 0
 fi
 
 for part in `ls ${1}*`; do
@@ -21,22 +33,22 @@ if [ "$IMG_URL" == "--cached" ]; then
     echo "Skipping download and using cached files"
 else
     echo "Downloading the OS image. This might take a good while ..."
-    rm -rf ~/kano/*
-    mkdir -p ~/kano
-    curl "$IMG_URL".gz | gunzip -c >~/kano/os.img
-    wget -O ~/kano/metadata.json "$IMG_URL".json
+    rm -rf $WORK_DIR/*
+    mkdir -p $WORK_DIR
+    curl "$IMG_URL".gz | gunzip -c >$WORK_DIR/os.img
+    wget -O $WORK_DIR/metadata.json "$IMG_URL".json
 fi
 
-if [ ! -e ~/kano/os.img ] || [ ! -e ~/kano/metadata.json ]; then
+if [ ! -e $WORK_DIR/os.img ] || [ ! -e $WORK_DIR/metadata.json ]; then
     echo "ERROR: Failed to download the image. Please try again."
     exit 1
 fi
 
 echo "Burning the image to the card. This might take a while ..."
-pv ~/kano/os.img | sudo dd of=$DEVICE bs=4M
+pv $WORK_DIR/os.img | sudo dd of=$DEVICE bs=4M
 
 echo "Calculating the checksum."
-orig_md5=`json-get ~/kano/metadata.json uncompressed_md5`
+orig_md5=`json-get $WORK_DIR/metadata.json uncompressed_md5`
 echo "ORIGINAL checksum: $orig_md5"
 
 dev_md5=`sudo md5sum $DEVICE | cut -c -32`
