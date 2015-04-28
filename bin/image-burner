@@ -41,7 +41,7 @@ else
     echo "Downloading the OS image. This might take a good while ..."
     rm -rf $WORK_DIR/*
     mkdir -p $WORK_DIR
-    curl -C - --retry 999 --retry-delay 10 "$IMG_URL".gz | gunzip -c >$WORK_DIR/os.img
+    curl -C - --retry 999 --retry-delay 10 --retry-max-time 0 "$IMG_URL".gz | gunzip -c >$WORK_DIR/os.img
     wget -O $WORK_DIR/metadata.json "$IMG_URL".json
 fi
 
