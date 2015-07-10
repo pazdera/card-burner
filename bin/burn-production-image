@@ -67,16 +67,17 @@ gzip -dc $IMG_FILE | pv -s $uncomp_size | sudo dd bs=4M of=$DEVICE
 
 echo "Calculating the checksum. This might again take a while."
 orig_md5=`json-get $METADATA_FILE uncompressed_md5`
-echo "ORIGINAL checksum: $orig_md5"
+tco "{{blue:: ORIGINAL checksum}}: $orig_md5"
 
 dev_md5=`sudo md5sum $DEVICE | cut -c -32`
-echo "CARD checksum    : $dev_md5"
 
 sync
 
 if [ "$orig_md5" == "$dev_md5" ]; then
-    echo "SUCCESS: Production image burned successfully (it is safe to remove the card now)."
+    tco "{{blue:: CARD checksum}}    : {{green:: $dev_md5}}"
+    tco "{{green::b SUCCESS}}: Production image burned successfully (it is safe to remove the card now)."
 else
-    echo "FAILED: The checksums don't match."
+    tco "{{blue:: CARD checksum}}    : {{red:: $dev_md5}}"
+    tco "{{red::b FAILED}}: The checksums don't match."
     exit 1
 fi
