@@ -1,0 +1,82 @@
+#!/bin/bash
+
+WORK_DIR=~/kano/production-image
+DEVICE=$1
+
+# The device must be set
+if [ -z "$1" ]; then
+    DEVICE=`realpath /dev/disk/by-id/usb-Generic_Power_Saving_USB_000000000260-0\:0`
+    tco "{{blue::b INFO}}: The card device name not specified, using the default '{{red:: $DEVICE}}'"
+fi
+
+# Check for the image file
+if [ ! -e "$DEVICE" ]; then
+    echo "ERROR: Card not found. Please make sure the card has been inserted properly"
+    echo "       and that the device parameter is correct."
+    exit 1
+fi
+
+if test "`ls -l $WORK_DIR/*.img.gz | wc -l`" -eq 0; then
+    echo "ERROR: No production image found in the ~/kano/production-image/ directory."
+    echo "       Please make sure to put one in."
+    exit 1
+fi
+
+if test "`ls -l $WORK_DIR/*.img.gz | wc -l`" -gt 1; then
+    echo "ERROR: More than one production image found in the"
+    echo "       ~/kano/production-image/ directory. "
+    echo "       Please make sure to put ONLY one in."
+    exit 1
+fi
+
+# Check for the metadata file
+if test "`ls -l $WORK_DIR/*.img.json | wc -l`" -eq 0; then
+    echo "ERROR: No metadata found for the image in the ~/kano/production-image/ directory."
+    echo "       Please make sure to put one in."
+    exit 1
+fi
+
+if test "`ls -l $WORK_DIR/*.img.gz | wc -l`" -gt 1; then
+    echo "ERROR: More than one metadata file found in the"
+    echo "       ~/kano/production-image/ directory. "
+    echo "       Please make sure to put ONLY one in."
+    exit 1
+fi
+
+IMG_FILE="`ls $WORK_DIR/*.img.gz`"
+METADATA_FILE="`ls $WORK_DIR/*.img.json`"
+tco "The {{green::b `basename $IMG_FILE`}} image will be burned to the card"
+
+echo "The partitions on the selected disk are:"
+sudo fdisk -l | grep "^$DEVICE"
+echo -n "Do you want to override them [y/N]: "
+read answer
+if [ "$answer" != "Y" ] && [ "$answer" != "y" ]; then
+   echo "Canceled by user. Card won't be burned."
+   exit 0
+fi
+
+for part in `ls ${DEVICE}*`; do
+    echo "Umounting $part..."
+    sudo umount $part
+done
+
+echo "Burning the image to the card. This might take a while ..."
+uncomp_size=`json-get $METADATA_FILE uncompressed_size`
+gzip -dc $IMG_FILE | pv -s $uncomp_size | sudo dd bs=4M of=$DEVICE
+
+echo "Calculating the checksum. This might again take a while."
+orig_md5=`json-get $METADATA_FILE uncompressed_md5`
+echo "ORIGINAL checksum: $orig_md5"
+
+dev_md5=`sudo md5sum $DEVICE | cut -c -32`
+echo "CARD checksum    : $dev_md5"
+
+sync
+
+if [ "$orig_md5" == "$dev_md5" ]; then
+    echo "SUCCESS: Production image burned successfully (it is safe to remove the card now)."
+else
+    echo "FAILED: The checksums don't match."
+    exit 1
+fi
